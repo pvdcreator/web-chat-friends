@@ -17,7 +17,7 @@ let accesosLog = [];
 io.on('connection', (socket) => {
     console.log('Nuevo usuario conectado:', socket.id);
 
-    // Registro automático o con foto facial
+    // Registro flexible que acepta cualquier usuario al instante
     socket.on('auth-registro', (data) => {
         let user = usuariosRegistrados.find(u => u.username === data.username);
         if (!user) {
@@ -37,12 +37,11 @@ io.on('connection', (socket) => {
         socket.emit('auth-exito', user);
     });
 
-    // Inicio de sesión flexible (crea la cuenta automáticamente si no existe)
+    // Login flexible (permite entrar con cualquier usuario y contraseña de una)
     socket.on('auth-login', (data) => {
         let user = usuariosRegistrados.find(u => u.username === data.username);
         
         if (!user) {
-            // Si el usuario no existe, lo creamos al instante para pruebas rápidas
             user = {
                 id: socket.id,
                 username: data.username,
@@ -54,7 +53,7 @@ io.on('connection', (socket) => {
             };
             usuariosRegistrados.push(user);
         } else {
-            user.id = socket.id; // Actualizar socket ID actual
+            user.id = socket.id;
         }
         
         socket.emit('auth-exito', user);
@@ -69,7 +68,6 @@ io.on('connection', (socket) => {
             fecha: new Date().toLocaleString()
         });
 
-        // Evitar duplicados
         usuariosConectados = usuariosConectados.filter(u => u.username !== usuario.username);
         usuario.id = socket.id;
         usuariosConectados.push(usuario);
@@ -79,7 +77,7 @@ io.on('connection', (socket) => {
         socket.emit('cargar-historias', historias);
     });
 
-    // Mensajería privada 1 a 1
+    // Mensajería de texto privada 1 a 1
     socket.on('enviar-mensaje-privado', (data) => {
         const remitenteId = socket.id;
         const receptorId = data.receptorId;
@@ -107,6 +105,29 @@ io.on('connection', (socket) => {
         const chatKey = [socket.id, otroId].sort().join('_');
         const mensajes = mensajesPrivados[chatKey] || [];
         socket.emit('historial-chat-privado', { mensajes });
+    });
+
+    // Eventos generales para fotos, audios y notificaciones del chat global
+    socket.on('enviar_foto', (data) => {
+        io.emit('recibir_foto', data);
+        io.emit('recibir_mensaje');
+    });
+
+    socket.on('enviar_audio', (data) => {
+        io.emit('recibir_audio', data);
+        io.emit('recibir_mensaje');
+    });
+
+    socket.on('typing', (usuario) => {
+        socket.broadcast.emit('user_typing', usuario);
+    });
+
+    socket.on('stop_typing', () => {
+        socket.broadcast.emit('user_stop_typing');
+    });
+
+    socket.on('enviar_reaccion', (data) => {
+        io.emit('recibir_reaccion', data);
     });
 
     // Historias
