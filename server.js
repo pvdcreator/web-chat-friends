@@ -252,6 +252,10 @@ io.on('connection', (socket) => {
     socket.on('stop_typing', () => {
         socket.broadcast.emit('user_stop_typing');
     });
+    // Retransmitir foto a todos en el chat
+    socket.on('enviar_foto', (data) => {
+        io.emit('recibir_foto', data);
+    });
 });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

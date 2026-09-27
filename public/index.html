@@ -673,6 +673,53 @@ socket.on('user_typing', (usuario) => {
 socket.on('user_stop_typing', () => {
     if (typingIndicator) typingIndicator.innerText = '';
 });
+// --- Envío de Fotos en el Chat ---
+const chatFotoInput = document.getElementById('chatFotoInput');
+
+if (chatFotoInput) {
+    chatFotoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Limitar tamaño a 2MB para no saturar el socket
+        if (file.size > 2 * 1024 * 1024) {
+            alert('La imagen es demasiado pesada (máximo 2 MB).');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const autor = typeof miNick !== 'undefined' ? miNick : (typeof nombreUsuario !== 'undefined' ? nombreUsuario : 'Yo');
+            
+            socket.emit('enviar_foto', {
+                autor: autor,
+                imagen: reader.result,
+                fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+        };
+        reader.readAsDataURL(file);
+
+        chatFotoInput.value = '';
+    });
+}
+
+socket.on('recibir_foto', (data) => {
+    const contenedor = document.getElementById('chatMessages');
+    if (!contenedor) return;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.style.margin = '8px 0';
+    msgDiv.style.display = 'flex';
+    msgDiv.style.flexDirection = 'column';
+
+    msgDiv.innerHTML = `
+        <span style="font-size: 0.75rem; color: #888;">${data.autor} • ${data.fecha}</span>
+        <img src="${data.imagen}" style="max-width: 220px; border-radius: 10px; margin-top: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+    `;
+
+    contenedor.appendChild(msgDiv);
+    contenedor.scrollTop = contenedor.scrollHeight;
+});
   </script>
 </body>
 </html>
