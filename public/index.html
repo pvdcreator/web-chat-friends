@@ -792,6 +792,13 @@ socket.on('recibir_audio', (data) => {
     contenedor.appendChild(msgDiv);
     contenedor.scrollTop = contenedor.scrollHeight;
 });
+// Activar instalador de app (PWA)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .catch((err) => console.log('Error SW:', err));
+    });
+}
   </script>
 </body>
 </html>
