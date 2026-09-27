@@ -243,6 +243,15 @@ io.on('connection', (socket) => {
     }
     io.emit('feed-perfiles', unicos);
   }
+// Notificar cuando alguien escribe
+    socket.on('typing', (usuario) => {
+        socket.broadcast.emit('user_typing', usuario);
+    });
+
+    // Notificar cuando deja de escribir
+    socket.on('stop_typing', () => {
+        socket.broadcast.emit('user_stop_typing');
+    });
 });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

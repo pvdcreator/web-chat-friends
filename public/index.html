@@ -191,6 +191,7 @@
       <div class="chat-messages" id="chatMessages"></div>
 
       <!-- Barra de entrada multimedia -->
+       <div id="typing-indicator" style="font-size: 0.8rem; color: #888; font-style: italic; min-height: 18px; padding: 2px 10px;"></div>
       <div class="chat-input-bar">
         <!-- Enviar Imagen -->
         <input type="file" id="chatFotoInput" accept="image/*" style="display: none;">
@@ -647,6 +648,31 @@
       deferredPrompt.prompt();
     };
   });
+  // --- Indicador de Escribiendo ---
+const inputMensaje = document.querySelector('input[type="text"]') || document.querySelector('input');
+const typingIndicator = document.getElementById('typing-indicator');
+let typingTimer;
+
+if (inputMensaje) {
+    inputMensaje.addEventListener('input', () => {
+        // Usa tu variable de nombre si existe, o envía 'Alguien'
+        const autor = typeof miNick !== 'undefined' ? miNick : (typeof nombreUsuario !== 'undefined' ? nombreUsuario : 'Alguien');
+        socket.emit('typing', autor);
+
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            socket.emit('stop_typing');
+        }, 1500);
+    });
+}
+
+socket.on('user_typing', (usuario) => {
+    if (typingIndicator) typingIndicator.innerText = `${usuario} está escribiendo...`;
+});
+
+socket.on('user_stop_typing', () => {
+    if (typingIndicator) typingIndicator.innerText = '';
+});
   </script>
 </body>
 </html>
