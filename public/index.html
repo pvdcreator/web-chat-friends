@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Web Chat Friends</title>
+  <!-- Configuración de App Nativa Móvil -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b0f17">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Web Chat Friends">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #0b0f17; color: #f0f6fc; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+
+    .app-screen { width: 100%; max-width: 480px; height: 100%; display: flex; flex-direction: column; background: #111827; position: relative; }
+
+    /* Cabecera */
+    header { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #1f2937; background: #0f172a; flex-shrink: 0; z-index: 10; }
+    header h1 { font-size: 1.2rem; font-weight: 800; background: linear-gradient(45deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-header { background: #1f2937; border: 1px solid #374151; color: #cbd5e1; padding: 6px 10px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; }
+    .btn-admin { background: #7c3aed; color: white; border: none; font-weight: bold; display: none; }
+
+    /* Contenido desplazable */
+    .tab-content { flex: 1; overflow-y: auto; padding: 14px; display: none; }
+    .tab-content.active { display: block; }
+
+    /* Barra de Navegación Inferior (Estilo App Móvil) */
+    .bottom-nav { height: 60px; background: #0f172a; border-top: 1px solid #1f2937; display: flex; align-items: center; justify-content: space-around; flex-shrink: 0; z-index: 20; }
+    .nav-btn { background: none; border: none; color: #64748b; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+    .nav-btn span.icon { font-size: 1.3rem; }
+    .nav-btn.active { color: #38bdf8; font-weight: bold; }
+
+    /* 1. SECCIÓN PERFILES */
+    .profiles-grid { display: flex; flex-direction: column; gap: 12px; }
+    .profile-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .profile-left { display: flex; align-items: center; gap: 12px; overflow: hidden; }
+    .profile-avatar-wrap { position: relative; flex-shrink: 0; }
+    .profile-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8; background: #334155; }
+    .badge-verified { position: absolute; bottom: -2px; right: -2px; background: #0284c7; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; border: 1.5px solid #111827; }
+    .profile-info { display: flex; flex-direction: column; overflow: hidden; }
+    .profile-name { font-weight: 700; font-size: 0.95rem; color: #f8fafc; }
+    .profile-bio { font-size: 0.78rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-chat { background: #0284c7; color: white; border: none; padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+
+    /* 2. SECCIÓN CHATS */
+    .chats-inbox { display: flex; flex-direction: column; gap: 8px; }
+    .inbox-item { background: #1e293b; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+
+    /* 3. SECCIÓN HISTORIAS */
+    .stories-feed-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .story-card-item { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 9/14; background: #1e293b; cursor: pointer; }
+    .story-card-item img.media { width: 100%; height: 100%; object-fit: cover; }
+    .story-card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; }
+    .story-card-author { display: flex; align-items: center; gap: 6px; }
+    .story-card-author img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+    .story-card-author span { font-size: 0.75rem; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+    /* Chat Privado Pantalla Completa */
+    .chat-modal { position: absolute; inset: 0; background: #0f172a; z-index: 50; display: none; flex-direction: column; }
+    .chat-header { height: 56px; border-bottom: 1px solid #1f2937; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .bubble { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 0.9rem; word-break: break-word; }
+    .bubble.me { align-self: flex-end; background: #0284c7; color: white; border-bottom-right-radius: 4px; }
+    .bubble.other { align-self: flex-start; background: #1e293b; border: 1px solid #334155; border-bottom-left-radius: 4px; }
+    .bubble img.msg-img { max-width: 100%; border-radius: 10px; margin-top: 4px; display: block; }
+    .bubble audio { width: 220px; height: 36px; margin-top: 4px; }
+
+    /* Barra de entrada de chat multimedia */
+    .chat-input-bar { display: flex; align-items: center; padding: 10px 12px; background: #1e293b; border-top: 1px solid #334155; gap: 8px; }
+    .chat-input-bar input { flex: 1; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 20px; padding: 9px 14px; outline: none; }
+    .btn-media { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94a3b8; }
+    .btn-mic.recording { color: #ef4444; animation: pulse 1s infinite; }
+
+    /* Pantalla de Verificación Facial en Registro */
+    .auth-overlay { position: absolute; inset: 0; background: #0b0f17; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
+    .auth-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; }
+    .auth-input { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; outline: none; width: 100%; }
+    .auth-btn { background: #0284c7; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .camera-box { width: 100%; background: #000; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px; }
+    video#videoSelfie { width: 100%; max-height: 180px; object-fit: cover; border-radius: 10px; }
+    img#previewSelfie { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8; display: none; }
+
+    /* Visor de Historia */
+    .story-viewer { position: absolute; inset: 0; background: #000; z-index: 60; display: none; flex-direction: column; }
+    .story-media { width: 100%; height: 100%; object-fit: contain; }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div class="app-screen">
+
+    <!-- PANTALLA DE ACCESO Y VERIFICACIÓN FACIAL -->
+    <div class="auth-overlay" id="authScreen">
+      <div class="auth-card">
+        <h2 style="text-align: center; color: #38bdf8; font-size: 1.3rem;">Web Chat Friends</h2>
+        <div style="display: flex; border-bottom: 1px solid #334155; margin-bottom: 4px;">
+          <div style="flex: 1; text-align: center; padding: 8px; cursor: pointer; color: #38bdf8; font-weight: bold;" id="tabEntrar">Entrar</div>
+          <div style="flex: 1; text-align: center; padding: 8px; cursor: pointer; color: #94a3b8; font-weight: bold;" id="tabCrear">Crear Cuenta</div>
+        </div>
+
+        <div id="authErrorMsg" style="color: #ef4444; font-size: 0.8rem; text-align: center; display: none;"></div>
+
+        <!-- Login -->
+        <div id="formEntrar" style="display: flex; flex-direction: column; gap: 10px;">
+          <input type="text" id="loginUser" class="auth-input" placeholder="Usuario">
+          <input type="password" id="loginPass" class="auth-input" placeholder="Contraseña">
+          <button class="auth-btn" id="btnLogin">Iniciar Sesión</button>
+        </div>
+
+        <!-- Registro con Cámara Frontal -->
+        <div id="formCrear" style="display: none; flex-direction: column; gap: 10px;">
+          <input type="text" id="regUser" class="auth-input" placeholder="Usuario">
+          <input type="password" id="regPass" class="auth-input" placeholder="Contraseña">
+          <input type="text" id="regNombre" class="auth-input" placeholder="Tu Nombre">
+          <input type="text" id="regBio" class="auth-input" placeholder="Biografía corta...">
+
+          <!-- Módulo de Verificación Facial -->
+          <div class="camera-box">
+            <span style="font-size: 0.75rem; color: #38bdf8; font-weight: bold;">📸 Verificación Facial Obligatoria</span>
+            <video id="videoSelfie" autoplay playsinline muted></video>
+            <img id="previewSelfie" alt="Selfie Verificada">
+            <button type="button" class="btn-header" id="btnActivarCamara">Activar Cámara</button>
+            <button type="button" class="btn-header" id="btnCapturarSelfie" style="display: none; background: #0284c7; color: white;">Capturar Rostro ✓</button>
+          </div>
+
+          <button class="auth-btn" id="btnRegistrarse">Crear Cuenta Verificada</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CABECERA -->
+    <header>
+      <h1 id="headerTitulo">Perfiles</h1>
+      <div class="header-actions">
+        <button class="btn-header btn-admin" id="btnAdmin">🛡️ Admin</button>
+        <button class="btn-header" id="btnSubirStory">📸 Historia</button>
+        <button class="btn-header" id="btnSalir">Salir</button>
+      </div>
+    </header>
+
+    <!-- 1. PESTAÑA PERFILES -->
+    <div class="tab-content active" id="tabContentPerfiles">
+      <div class="profiles-grid" id="profilesFeed"></div>
+    </div>
+
+    <!-- 2. PESTAÑA CHATS -->
+    <div class="tab-content" id="tabContentChats">
+      <div class="chats-inbox" id="chatsInbox">
+        <div style="color: #64748b; text-align: center; margin-top: 30px; font-size: 0.85rem;">Tus conversaciones privadas activas aparecerán aquí.</div>
+      </div>
+    </div>
+
+    <!-- 3. PESTAÑA HISTORIAS -->
+    <div class="tab-content" id="tabContentHistorias">
+      <div class="stories-feed-grid" id="storiesGrid"></div>
+    </div>
+
+    <!-- NAVEGACIÓN INFERIOR (App Móvil) -->
+    <div class="bottom-nav">
+      <button class="nav-btn active" data-tab="tabContentPerfiles" data-title="Perfiles">
+        <span class="icon">👥</span>
+        <span>Perfiles</span>
+      </button>
+      <button class="nav-btn" data-tab="tabContentChats" data-title="Mensajes">
+        <span class="icon">💬</span>
+        <span>Chats</span>
+      </button>
+      <button class="nav-btn" data-tab="tabContentHistorias" data-title="Historias">
+        <span class="icon">✨</span>
+        <span>Historias</span>
+      </button>
+    </div>
+
+    <!-- CHAT PRIVADO 1 A 1 CON FOTOS Y AUDIO -->
+    <div class="chat-modal" id="chatModal">
+      <div class="chat-header">
+        <button class="btn-header" id="btnCerrarChat">←</button>
+        <img id="chatTargetImg" src="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+        <div>
+          <div id="chatTargetName" style="font-weight: bold; font-size: 0.9rem;"></div>
+          <div style="font-size: 0.7rem; color: #38bdf8;">✓ Perfil Verificado</div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages"></div>
+
+      <!-- Barra de entrada multimedia -->
+      <div class="chat-input-bar">
+        <!-- Enviar Imagen -->
+        <input type="file" id="chatFotoInput" accept="image/*" style="display: none;">
+        <button class="btn-media" onclick="document.getElementById('chatFotoInput').click()">📷</button>
+        
+        <!-- Enviar Audio / Micrófono -->
+        <button class="btn-media btn-mic" id="btnGrabarAudio">🎙️</button>
+
+        <input type="text" id="chatInput" placeholder="Mensaje...">
+        <button class="btn-header" id="btnEnviarChat" style="background: #0284c7; color: white;">Enviar</button>
+      </div>
+    </div>
+
+    <!-- VISOR DE HISTORIAS -->
+    <div class="story-viewer" id="storyViewer">
+      <button class="btn-header" id="btnCerrarStory" style="position: absolute; top: 16px; right: 16px; z-index: 10;">✕</button>
+      <img class="story-media" id="storyViewerImg" src="">
+    </div>
+
+    <!-- MODAL SUBIR HISTORIA -->
+    <input type="file" id="fileStoryInput" accept="image/*" style="display: none;">
+
+    <!-- PANEL ADMIN -->
+    <div class="chat-modal" id="modalAdmin" style="background: #0b0f17; padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="color: #a855f7;">🛡️ Conexiones y Auditoría</h3>
+        <button class="btn-header" id="btnCerrarAdmin">✕</button>
+      </div>
+      <div style="flex: 1; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; color: #cbd5e1;">
+          <thead>
+            <tr style="border-bottom: 1px solid #334155; text-align: left;">
+              <th style="padding: 6px;">Usuario</th>
+              <th style="padding: 6px;">IP</th>
+              <th style="padding: 6px;">Dispositivo</th>
+              <th style="padding: 6px;">Hora</th>
+            </tr>
+          </thead>
+          <tbody id="tablaAdminBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <canvas id="canvasSelfie" style="display: none;"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    let miUsuario = JSON.parse(localStorage.getItem('wcf_usuario') || 'null');
+    let fotoVerificadaBase64 = null;
+    let videoStream = null;
+
+    // --- NAVEGACIÓN POR PESTAÑAS (APP MÓVIL) ---
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const headerTitulo = document.getElementById('headerTitulo');
+
+    navButtons.forEach(btn => {
+      btn.onclick = () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        headerTitulo.textContent = btn.dataset.title;
+      };
+    });
+
+    // --- ACCESO Y REGISTRO CON CÁMARA FRONTAL ---
+    const tabEntrar = document.getElementById('tabEntrar');
+    const tabCrear = document.getElementById('tabCrear');
+    const formEntrar = document.getElementById('formEntrar');
+    const formCrear = document.getElementById('formCrear');
+    const errorMsg = document.getElementById('authErrorMsg');
+
+    tabEntrar.onclick = () => {
+      tabEntrar.style.color = '#38bdf8';
+      tabCrear.style.color = '#94a3b8';
+      formEntrar.style.display = 'flex';
+      formCrear.style.display = 'none';
+      detenerCamara();
+    };
+
+    tabCrear.onclick = () => {
+      tabCrear.style.color = '#38bdf8';
+      tabEntrar.style.color = '#94a3b8';
+      formCrear.style.display = 'flex';
+      formEntrar.style.display = 'none';
+    };
+
+    // Activar Cámara Frontal
+    const video = document.getElementById('videoSelfie');
+    const previewSelfie = document.getElementById('previewSelfie');
+    const btnActivarCamara = document.getElementById('btnActivarCamara');
+    const btnCapturarSelfie = document.getElementById('btnCapturarSelfie');
+
+    btnActivarCamara.onclick = async () => {
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        video.srcObject = videoStream;
+        video.style.display = 'block';
+        previewSelfie.style.display = 'none';
+        btnActivarCamara.style.display = 'none';
+        btnCapturarSelfie.style.display = 'inline-block';
+      } catch (e) {
+        alert('No se pudo acceder a la cámara. Asegúrate de dar permisos o estar en un entorno seguro (HTTPS).');
+      }
+    };
+
+    btnCapturarSelfie.onclick = () => {
+      const canvas = document.getElementById('canvasSelfie');
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 320;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      fotoVerificadaBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+      previewSelfie.src = fotoVerificadaBase64;
+      previewSelfie.style.display = 'block';
+      video.style.display = 'none';
+      btnCapturarSelfie.style.display = 'none';
+      btnActivarCamara.style.display = 'inline-block';
+      btnActivarCamara.textContent = 'Repetir Foto';
+      detenerCamara();
+    };
+
+    function detenerCamara() {
+      if (videoStream) {
+        videoStream.getTracks().forEach(t => t.stop());
+        videoStream = null;
+      }
+    }
+
+    // Registro
+    document.getElementById('btnRegistrarse').onclick = () => {
+      const username = document.getElementById('regUser').value.trim();
+      const password = document.getElementById('regPass').value;
+      const nombre = document.getElementById('regNombre').value.trim();
+      const bio = document.getElementById('regBio').value.trim();
+
+      if (!username || !password || !fotoVerificadaBase64) {
+        errorMsg.textContent = 'Completa usuario, contraseña y captura tu selfie de verificación.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      socket.emit('auth-registro', {
+        username,
+        password,
+        nombre,
+        bio,
+        fotoVerificada: fotoVerificadaBase64
+      });
+    };
+
+    // Login
+    document.getElementById('btnLogin').onclick = () => {
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+      if (!username || !password) return;
+      socket.emit('auth-login', { username, password });
+    };
+
+    socket.on('auth-error', (txt) => {
+      errorMsg.textContent = txt;
+      errorMsg.style.display = 'block';
+    });
+
+    socket.on('auth-exito', (u) => {
+      miUsuario = u;
+      localStorage.setItem('wcf_usuario', JSON.stringify(u));
+      iniciarApp();
+    });
+
+    function iniciarApp() {
+      if (!miUsuario) return;
+      document.getElementById('authScreen').style.display = 'none';
+      if (miUsuario.rol === 'admin') {
+        document.getElementById('btnAdmin').style.display = 'inline-block';
+      }
+      socket.emit('conectar-usuario', miUsuario);
+    }
+
+    if (miUsuario) iniciarApp();
+
+    document.getElementById('btnSalir').onclick = () => {
+      localStorage.removeItem('wcf_usuario');
+      location.reload();
+    };
+
+    // --- PANEL ADMIN ---
+    document.getElementById('btnAdmin').onclick = () => {
+      document.getElementById('modalAdmin').style.display = 'flex';
+      socket.emit('admin-solicitar-datos', miUsuario.id);
+    };
+    document.getElementById('btnCerrarAdmin').onclick = () => {
+      document.getElementById('modalAdmin').style.display = 'none';
+    };
+    socket.on('admin-datos', ({ accesos }) => {
+      const b = document.getElementById('tablaAdminBody');
+      b.innerHTML = '';
+      accesos.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="padding:6px; font-weight:bold;">${a.username}</td><td style="padding:6px;">${a.ip}</td><td style="padding:6px;">${a.dispositivo}</td><td style="padding:6px;">${a.fecha.split(' ')[1]||a.fecha}</td>`;
+        b.appendChild(tr);
+      });
+    });
+
+    // --- 1. FEED DE PERFILES ---
+    const profilesFeed = document.getElementById('profilesFeed');
+    let listaChatsAbiertos = new Map(); // id -> datosUsuario
+
+    socket.on('feed-perfiles', (usuarios) => {
+      if (!miUsuario) return;
+      profilesFeed.innerHTML = '';
+      const otros = usuarios.filter(u => u.id !== miUsuario.id);
+
+      if (otros.length === 0) {
+        profilesFeed.innerHTML = '<div style="color: #64748b; text-align: center; margin-top: 40px; font-size: 0.85rem;">Esperando a que más amigos se conecten...</div>';
+        return;
+      }
+
+      otros.forEach(u => {
+        const card = document.createElement('div');
+        card.className = 'profile-card';
+        card.innerHTML = `
+          <div class="profile-left">
+            <div class="profile-avatar-wrap">
+              <img class="profile-avatar" src="${u.foto}">
+              <div class="badge-verified">✓</div>
+            </div>
+            <div class="profile-info">
+              <span class="profile-name">${u.nombre}</span>
+              <span class="profile-bio">${u.bio}</span>
+            </div>
+          </div>
+          <button class="btn-chat">Chatear 💬</button>
+        `;
+        card.querySelector('.btn-chat').onclick = () => abrirChat(u);
+        profilesFeed.appendChild(card);
+      });
+    });
+
+    // --- 2. CHAT PRIVADO CON FOTOS Y NOTAS DE VOZ ---
+    let chatTarget = null;
+    const chatModal = document.getElementById('chatModal');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function abrirChat(usuario) {
+      chatTarget = usuario;
+      listaChatsAbiertos.set(usuario.id, usuario);
+      actualizarBandejaChats();
+
+      document.getElementById('chatTargetImg').src = usuario.foto;
+      document.getElementById('chatTargetName').textContent = usuario.nombre;
+      chatMessages.innerHTML = '';
+      chatModal.style.display = 'flex';
+      socket.emit('cargar-chat-privado', usuario.id);
+    }
+
+    document.getElementById('btnCerrarChat').onclick = () => {
+      chatModal.style.display = 'none';
+      chatTarget = null;
+    };
+
+    function actualizarBandejaChats() {
+      const inbox = document.getElementById('chatsInbox');
+      inbox.innerHTML = '';
+      listaChatsAbiertos.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'inbox-item';
+        item.innerHTML = `
+          <img src="${u.foto}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
+          <div>
+            <div style="font-weight: bold; font-size: 0.9rem;">${u.nombre}</div>
+            <div style="font-size: 0.72rem; color: #38bdf8;">Toca para abrir chat privado</div>
+          </div>
+        `;
+        item.onclick = () => abrirChat(u);
+        inbox.appendChild(item);
+      });
+    }
+
+    socket.on('historial-chat-privado', ({ mensajes }) => {
+      chatMessages.innerHTML = '';
+      mensajes.forEach(m => agregarBurbuja(m));
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
+    socket.on('mensaje-privado-recibido', ({ mensaje, remitente }) => {
+      listaChatsAbiertos.set(remitente.id, remitente);
+      actualizarBandejaChats();
+
+      if (chatTarget && (mensaje.remitenteId === chatTarget.id || mensaje.remitenteId === miUsuario.id)) {
+        agregarBurbuja(mensaje);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    });
+
+    function agregarBurbuja(m) {
+      const b = document.createElement('div');
+      const esMio = m.remitenteId === miUsuario.id;
+      b.className = `bubble ${esMio ? 'me' : 'other'}`;
+
+      let contenido = '';
+      if (m.tipo === 'imagen') {
+        contenido = `<img class="msg-img" src="${m.media}">`;
+      } else if (m.tipo === 'audio') {
+        contenido = `<audio controls src="${m.media}"></audio>`;
+      } else {
+        contenido = `<div>${m.texto}</div>`;
+      }
+
+      b.innerHTML = `${contenido}<div style="font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 4px;">${m.hora}</div>`;
+      chatMessages.appendChild(b);
+    }
+
+    // Enviar texto
+    document.getElementById('btnEnviarChat').onclick = () => {
+      const inp = document.getElementById('chatInput');
+      const txt = inp.value.trim();
+      if (!txt || !chatTarget) return;
+      socket.emit('enviar-mensaje-privado', { receptorId: chatTarget.id, texto: txt, tipo: 'texto' });
+      inp.value = '';
+    };
+
+    // Enviar Foto en Chat
+    document.getElementById('chatFotoInput').onchange = (e) => {
+      const file = e.target.files[0];
+      if (file && chatTarget) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          socket.emit('enviar-mensaje-privado', {
+            receptorId: chatTarget.id,
+            media: ev.target.result,
+            tipo: 'imagen'
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    // Enviar Nota de Voz en Chat (MediaRecorder)
+    let mediaRecorder = null;
+    let audioChunks = [];
+    const btnGrabarAudio = document.getElementById('btnGrabarAudio');
+
+    btnGrabarAudio.onclick = async () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        btnGrabarAudio.classList.remove('recording');
+      } else {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const r = new FileReader();
+            r.onload = (ev) => {
+              socket.emit('enviar-mensaje-privado', {
+                receptorId: chatTarget.id,
+                media: ev.target.result,
+                tipo: 'audio'
+              });
+            };
+            r.readAsDataURL(blob);
+            stream.getTracks().forEach(t => t.stop());
+          };
+
+          mediaRecorder.start();
+          btnGrabarAudio.classList.add('recording');
+        } catch (err) {
+          alert('Permiso de micrófono denegado o no disponible en conexiones no seguras.');
+        }
+      }
+    };
+
+    // --- 3. SECCIÓN HISTORIAS ---
+    const storiesGrid = document.getElementById('storiesGrid');
+    let listaHistorias = [];
+
+    socket.on('cargar-historias', (h) => {
+      listaHistorias = h;
+      renderHistoriasGrid();
+    });
+
+    socket.on('nueva-historia', (h) => {
+      listaHistorias.unshift(h);
+      renderHistoriasGrid();
+    });
+
+    function renderHistoriasGrid() {
+      storiesGrid.innerHTML = '';
+      if (listaHistorias.length === 0) {
+        storiesGrid.innerHTML = '<div style="color: #64748b; font-size: 0.85rem; grid-column: span 2; text-align: center; margin-top: 30px;">Aún no hay historias publicadas. ¡Sé el primero!</div>';
+        return;
+      }
+
+      listaHistorias.forEach(h => {
+        const item = document.createElement('div');
+        item.className = 'story-card-item';
+        item.innerHTML = `
+          <img class="media" src="${h.imagen}">
+          <div class="story-card-overlay">
+            <div class="story-card-author">
+              <img src="${h.autorFoto}">
+              <span>${h.autorNombre}</span>
+            </div>
+            ${h.pie ? `<div style="font-size: 0.72rem; color: #e2e8f0; margin-top: 4px;">${h.pie}</div>` : ''}
+          </div>
+        `;
+        item.onclick = () => {
+          document.getElementById('storyViewerImg').src = h.imagen;
+          document.getElementById('storyViewer').style.display = 'flex';
+        };
+        storiesGrid.appendChild(item);
+      });
+    }
+
+    document.getElementById('btnCerrarStory').onclick = () => {
+      document.getElementById('storyViewer').style.display = 'none';
+    };
+
+    // Subir Historia
+    document.getElementById('btnSubirStory').onclick = () => document.getElementById('fileStoryInput').click();
+    document.getElementById('fileStoryInput').onchange = (e) => {
+      const f = e.target.files[0];
+      if (f) {
+        const r = new FileReader();
+        r.onload = (ev) => {
+          const pie = prompt('¿Quieres añadir una descripción a tu historia?') || '';
+          socket.emit('subir-historia', { imagen: ev.target.result, pie });
+        };
+        r.readAsDataURL(f);
+      }
+    };
+    // Detección para instalar como App en el teléfono
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const bannerInstalar = document.createElement('div');
+    bannerInstalar.style.cssText = "position:fixed;bottom:70px;left:16px;right:16px;background:#0284c7;color:white;padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;z-index:99;box-shadow:0 4px 15px rgba(0,0,0,0.5);font-size:0.85rem;";
+    bannerInstalar.innerHTML = `<span>📲 Instalar <b>Web Chat Friends</b> en el móvil</span><button id="btnInstalarApp" style="background:white;color:#0284c7;border:none;padding:6px 12px;border-radius:8px;font-weight:bold;cursor:pointer;">Instalar</button>`;
+    document.body.appendChild(bannerInstalar);
+
+    document.getElementById('btnInstalarApp').onclick = () => {
+      bannerInstalar.remove();
+      deferredPrompt.prompt();
+    };
+  });
+  </script>
+</body>
+</html>
