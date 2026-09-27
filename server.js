@@ -252,13 +252,28 @@ io.on('connection', (socket) => {
     socket.on('stop_typing', () => {
         socket.broadcast.emit('user_stop_typing');
     });
-    // Retransmitir foto a todos en el chat
+// Guardar y retransmitir foto a todos en el chat
     socket.on('enviar_foto', (data) => {
+        const hora = data.hora || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        db.run("INSERT INTO mensajes (usuario, mensaje, hora) VALUES (?, ?, ?)", [data.usuario, data.foto, hora]);
         io.emit('recibir_foto', data);
     });
-    // Retransmitir notas de voz a todos en el chat
+
+    // Guardar y retransmitir notas de voz a todos en el chat
     socket.on('enviar_audio', (data) => {
+        const hora = data.hora || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        db.run("INSERT INTO mensajes (usuario, mensaje, hora) VALUES (?, ?, ?)", [data.usuario, data.audio, hora]);
         io.emit('recibir_audio', data);
+    });
+    // Avisar a todos cuántos usuarios hay conectados
+    io.emit('usuarios_online', io.engine.clientsCount);
+
+    socket.on('disconnect', () => {
+        io.emit('usuarios_online', io.engine.clientsCount);
+    });
+    // Retransmitir reacciones en tiempo real
+    socket.on('enviar_reaccion', (data) => {
+        io.emit('recibir_reaccion', data);
     });
 });
 const PORT = process.env.PORT || 3000;
