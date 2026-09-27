@@ -1,6 +1,7 @@
 {
-  "name": "Web Chat Friends",
+  "name": "ChatFriends",
   "short_name": "ChatFriends",
+  "description": "Aplicación de mensajería instantánea",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0f17",
@@ -8,15 +9,15 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=wcf_app_logo",
+      "src": "https://api.dicebear.com/7.x/bottts/png?seed=ChatFriends&size=192",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=wcf_app_logo",
+      "src": "https://api.dicebear.com/7.x/bottts/png?seed=ChatFriends&size=512",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
