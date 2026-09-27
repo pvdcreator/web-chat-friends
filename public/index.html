@@ -720,6 +720,78 @@ socket.on('recibir_foto', (data) => {
     contenedor.appendChild(msgDiv);
     contenedor.scrollTop = contenedor.scrollHeight;
 });
+// --- Grabación y Envío de Notas de Voz ---
+const btnMic = document.getElementById('btnGrabarAudio') || document.querySelector('.btn-mic');
+let mediaRecorder;
+let audioChunks = [];
+let grabando = false;
+
+if (btnMic) {
+    btnMic.addEventListener('click', async () => {
+        if (!grabando) {
+            // Iniciar grabación
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const autor = typeof miNick !== 'undefined' ? miNick : (typeof nombreUsuario !== 'undefined' ? nombreUsuario : 'Yo');
+                        
+                        socket.emit('enviar_audio', {
+                            autor: autor,
+                            audio: reader.result,
+                            fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        });
+                    };
+                    reader.readAsDataURL(audioBlob);
+                    
+                    // Detener micrófono
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                grabando = true;
+                btnMic.style.backgroundColor = '#ef4444'; // Rojo mientras graba
+                btnMic.title = 'Haz clic para detener y enviar';
+            } catch (err) {
+                alert('No se pudo acceder al micrófono: ' + err.message);
+            }
+        } else {
+            // Detener y enviar grabación
+            mediaRecorder.stop();
+            grabando = false;
+            btnMic.style.backgroundColor = ''; // Restablecer color original
+            btnMic.title = 'Grabar audio';
+        }
+    });
+}
+
+// Escuchar y reproducir notas de voz recibidas
+socket.on('recibir_audio', (data) => {
+    const contenedor = document.getElementById('chatMessages');
+    if (!contenedor) return;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.style.margin = '8px 0';
+    msgDiv.style.display = 'flex';
+    msgDiv.style.flexDirection = 'column';
+
+    msgDiv.innerHTML = `
+        <span style="font-size: 0.75rem; color: #888;">${data.autor} • ${data.fecha}</span>
+        <audio controls src="${data.audio}" style="margin-top: 5px; max-width: 250px;"></audio>
+    `;
+
+    contenedor.appendChild(msgDiv);
+    contenedor.scrollTop = contenedor.scrollHeight;
+});
   </script>
 </body>
 </html>

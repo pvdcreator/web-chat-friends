@@ -256,6 +256,10 @@ io.on('connection', (socket) => {
     socket.on('enviar_foto', (data) => {
         io.emit('recibir_foto', data);
     });
+    // Retransmitir notas de voz a todos en el chat
+    socket.on('enviar_audio', (data) => {
+        io.emit('recibir_audio', data);
+    });
 });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
