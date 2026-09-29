@@ -940,6 +940,11 @@
         lista.appendChild(card);
       });
     }
+    document.addEventListener('click', function(e) {
+  if (e.target.innerText.includes('Tú') || e.target.id.includes('tu')) {
+    if (typeof abrirMiPerfil === 'function') abrirMiPerfil();
+  }
+});
   </script>
 </body>
 </html>
