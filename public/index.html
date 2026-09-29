@@ -901,6 +901,52 @@ const observer = new MutationObserver((mutations) => {
 
 const chatContenedor = document.getElementById('mensajes') || document.body;
 observer.observe(chatContenedor, { childList: true, subtree: true });
+// Login y registro directo para evitar trabas
+    const btnLogin = document.getElementById('btnLogin');
+    if (btnLogin) {
+      btnLogin.onclick = () => {
+        const username = document.getElementById('loginUser').value.trim();
+        if (!username) {
+          alert('Por favor, escribe un nombre de usuario.');
+          return;
+        }
+        const miUsuario = {
+          id: 'user_' + Math.random().toString(36).substring(2, 9),
+          username: username,
+          nombre: username,
+          bio: 'Conectado en Web Chat Friends',
+          foto: 'https://api.dicebear.com/7.x/bottts/png?seed=' + username,
+          rol: 'user'
+        };
+        localStorage.setItem('wcf_usuario', JSON.stringify(miUsuario));
+        const authScreen = document.getElementById('authScreen');
+        if (authScreen) authScreen.style.display = 'none';
+        socket.emit('conectar-usuario', miUsuario);
+      };
+    }
+
+    const btnRegister = document.getElementById('btnRegister') || document.getElementById('btnCrearCuenta');
+    if (btnRegister) {
+      btnRegister.onclick = () => {
+        const username = document.getElementById('regUser').value.trim();
+        if (!username) {
+          alert('Por favor, escribe un nombre de usuario para registrarte.');
+          return;
+        }
+        const miUsuario = {
+          id: 'user_' + Math.random().toString(36).substring(2, 9),
+          username: username,
+          nombre: username,
+          bio: 'Nuevo usuario en Web Chat Friends',
+          foto: 'https://api.dicebear.com/7.x/bottts/png?seed=' + username,
+          rol: 'user'
+        };
+        localStorage.setItem('wcf_usuario', JSON.stringify(miUsuario));
+        const authScreen = document.getElementById('authScreen');
+        if (authScreen) authScreen.style.display = 'none';
+        socket.emit('conectar-usuario', miUsuario);
+      };
+    }
   </script>
 </body>
 </html>
