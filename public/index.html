@@ -242,53 +242,52 @@
         </table>
       </div>
     </div>
-<!-- PANEL DE MI PERFIL -->
-    <div class="my-profile-modal" id="modalMiPerfil">
+    <!-- PANEL DE MI PERFIL -->
+    <div class="my-profile-modal" id="modalMiPerfil" style="display:none; flex-direction:column; background:#121214; border-radius:16px; padding:20px; color:#fff; max-width:400px; width:90%; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h3 style="color: #38bdf8;">👤 Mi Perfil y Estadísticas</h3>
-        <button class="btn-header" id="btnCerrarMiPerfil">✕</button>
+        <h3 style="color: #38bdf8; font-size: 1.1rem; margin:0;">👤 Mi Perfil y Estadísticas</h3>
+        <button class="btn-header" id="btnCerrarMiPerfil" style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <div class="profile-header-card">
-        <img id="myProfileAvatar" src="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8;">
+      <div class="profile-header-card" style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+        <img id="myProfileAvatar" src="" style="width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8;">
         <div>
-          <h2 id="myProfileName" style="font-size: 1.1rem; color: #fff;"></h2>
+          <h2 id="myProfileName" style="font-size: 1.1rem; color: #fff; margin:0;"></h2>
           <p id="myProfileBio" style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;"></p>
         </div>
       </div>
 
-      <!-- Estadísticas Estilo RandoSnoop -->
-      <div class="stats-grid">
-        <div class="stat-box">
-          <div class="stat-number" id="statVistas">84k</div>
-          <div class="stat-label">Profile Views</div>
+      <!-- Estadísticas -->
+      <div class="stats-grid" style="display:flex; justify-content:space-between; margin-bottom:16px; gap:8px;">
+        <div class="stat-box" style="background:#1e1e24; padding:10px; border-radius:10px; text-align:center; flex:1;">
+          <div class="stat-number" id="statVistas" style="font-size:1rem; font-weight:bold; color:#38bdf8;">84k</div>
+          <div class="stat-label" style="font-size:0.65rem; color:#94a3b8; margin-top:2px;">Profile Views</div>
         </div>
-        <div class="stat-box">
-          <div class="stat-number" id="statSeguidores">3.5k</div>
-          <div class="stat-label">Followers</div>
+        <div class="stat-box" style="background:#1e1e24; padding:10px; border-radius:10px; text-align:center; flex:1;">
+          <div class="stat-number" id="statSeguidores" style="font-size:1rem; font-weight:bold; color:#38bdf8;">3.5k</div>
+          <div class="stat-label" style="font-size:0.65rem; color:#94a3b8; margin-top:2px;">Followers</div>
         </div>
-        <div class="stat-box">
-          <div class="stat-number" id="statMensajes">156k</div>
-          <div class="stat-label">Received Messages</div>
+        <div class="stat-box" style="background:#1e1e24; padding:10px; border-radius:10px; text-align:center; flex:1;">
+          <div class="stat-number" id="statMensajes" style="font-size:1rem; font-weight:bold; color:#38bdf8;">156k</div>
+          <div class="stat-label" style="font-size:0.65rem; color:#94a3b8; margin-top:2px;">Messages</div>
         </div>
       </div>
 
-      <!-- Intereses / Tags -->
-      <div class="profile-edit-section" style="margin-bottom: 16px;">
-        <h4 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 6px;">Intereses (Tags)</h4>
+      <!-- Intereses / Tags Visuales -->
+      <div style="margin-bottom: 16px;">
+        <h4 style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 6px;">Intereses (#tags)</h4>
         <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="myProfileTagsContainer">
-          <span style="background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;">pets</span>
-          <span style="background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;">music</span>
-          <span style="background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;">chat</span>
+          <!-- Se cargan dinámicamente -->
         </div>
       </div>
 
-      <!-- Editar Datos -->
-      <div class="profile-edit-section">
-        <h4 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 4px;">Editar Información</h4>
-        <input type="text" id="editNombreInput" class="auth-input" placeholder="Tu Nombre">
-        <input type="text" id="editBioInput" class="auth-input" placeholder="Tu Biografía (ej. Instagram)...">
-        <button class="auth-btn" id="btnGuardarPerfil" style="margin-top: 6px;">Guardar Cambios</button>
+      <!-- Editar Datos sin Bugs -->
+      <div class="profile-edit-section" style="display:flex; flex-direction:column; gap:8px;">
+        <h4 style="font-size: 0.8rem; color: #cbd5e1; margin:0;">Editar Información</h4>
+        <input type="text" id="editNombreInput" class="auth-input" placeholder="Tu Nombre" style="background:#1e1e24; border:1px solid #334155; padding:8px; border-radius:8px; color:#fff; font-size:0.85rem;">
+        <input type="text" id="editBioInput" class="auth-input" placeholder="Tu Biografía (ej. Instagram)..." style="background:#1e1e24; border:1px solid #334155; padding:8px; border-radius:8px; color:#fff; font-size:0.85rem;">
+        <input type="text" id="editTagsInput" class="auth-input" placeholder="Tags separados por coma (ej: gym, music, pets)" style="background:#1e1e24; border:1px solid #334155; padding:8px; border-radius:8px; color:#fff; font-size:0.85rem;">
+        <button class="auth-btn" id="btnGuardarPerfil" style="background:#38bdf8; color:#000; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:4px;">Guardar Cambios</button>
       </div>
     </div>
 
@@ -785,6 +784,69 @@
       document.getElementById('modalMiPerfil').style.display = 'none';
       location.reload();
     };
+    // --- LÓGICA DE MI PERFIL CORREGIDA Y SIN BUGS ---
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.profile-card');
+      if (card) {
+        const nombreCard = card.querySelector('.profile-name')?.textContent;
+        if (miUsuario && nombreCard === miUsuario.nombre) {
+          abrirMiPerfil();
+        }
+      }
+    });
+
+    function abrirMiPerfil() {
+      if (!miUsuario) return;
+      document.getElementById('myProfileAvatar').src = miUsuario.foto || '';
+      document.getElementById('myProfileName').textContent = miUsuario.nombre || 'Sin nombre';
+      document.getElementById('myProfileBio').textContent = miUsuario.bio || 'Sin biografía';
+      
+      document.getElementById('editNombreInput').value = miUsuario.nombre || '';
+      document.getElementById('editBioInput').value = miUsuario.bio || '';
+      document.getElementById('editTagsInput').value = miUsuario.tags ? miUsuario.tags.join(', ') : 'pets, music, chat';
+
+      // Renderizar tags visuales
+      const container = document.getElementById('myProfileTagsContainer');
+      container.innerHTML = '';
+      const tagsArray = miUsuario.tags || ['pets', 'music', 'chat'];
+      tagsArray.forEach(tag => {
+        const span = document.createElement('span');
+        span.style.cssText = 'background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem;';
+        span.textContent = `#${tag.trim()}`;
+        container.appendChild(span);
+      });
+      
+      document.getElementById('modalMiPerfil').style.display = 'flex';
+    }
+
+    const btnCerrar = document.getElementById('btnCerrarMiPerfil');
+    if (btnCerrar) {
+      btnCerrar.onclick = () => {
+        document.getElementById('modalMiPerfil').style.display = 'none';
+      };
+    }
+
+    const btnGuardar = document.getElementById('btnGuardarPerfil');
+    if (btnGuardar) {
+      btnGuardar.onclick = () => {
+        const nuevoNombre = document.getElementById('editNombreInput').value.trim();
+        const nuevaBio = document.getElementById('editBioInput').value.trim();
+        const nuevosTagsStr = document.getElementById('editTagsInput').value.trim();
+
+        if (nuevoNombre) miUsuario.nombre = nuevoNombre;
+        miUsuario.bio = nuevaBio;
+        miUsuario.tags = nuevosTagsStr ? nuevosTagsStr.split(',').map(t => t.trim()) : ['pets', 'music', 'chat'];
+
+        localStorage.setItem('wcf_usuario', JSON.stringify(miUsuario));
+        if (typeof socket !== 'undefined') {
+          socket.emit('conectar-usuario', miUsuario);
+        }
+
+        alert('¡Perfil actualizado con éxito!');
+        document.getElementById('modalMiPerfil').style.display = 'none';
+        location.reload();
+      };
+    }
   </script>
 </body>
 </html>
