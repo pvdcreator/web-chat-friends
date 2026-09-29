@@ -901,54 +901,42 @@ const observer = new MutationObserver((mutations) => {
 
 const chatContenedor = document.getElementById('mensajes') || document.body;
 observer.observe(chatContenedor, { childList: true, subtree: true });
-// Solución universal para los botones de acceso
-    const configurarAcceso = () => {
-      const btnLogin = document.getElementById('btnLogin');
-      const btnRegister = document.getElementById('btnRegister') || document.getElementById('btnCrearCuenta');
+// Forzar acceso total sin bloqueos
+    setTimeout(() => {
+      const authScreen = document.getElementById('authScreen');
+      const inputs = document.querySelectorAll('#authScreen input');
       
-      const procesarEntrada = () => {
-        // Busca cualquier input de texto visible que tenga contenido
-        const inputs = document.querySelectorAll('#authScreen input[type="text"], #authScreen input:not([type])');
-        let username = '';
-        inputs.forEach(input => {
-          if (input.value.trim()) username = input.value.trim();
-        });
+      // Si hacen clic en cualquier parte del cuadro de login o presionan Enter
+      if (authScreen) {
+        authScreen.onclick = (e) => {
+          if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button')) {
+            let username = 'yo';
+            inputs.forEach(input => {
+              if (input.value && input.value.trim().length > 0 && input.type !== 'password') {
+                username = input.value.trim();
+              }
+            });
 
-        if (!username) {
-          username = 'Usuario_' + Math.floor(Math.random() * 1000);
-        }
+            const miUsuario = {
+              id: 'user_' + Math.random().toString(36).substring(2, 9),
+              username: username,
+              nombre: username,
+              bio: 'Conectado en Web Chat Friends',
+              foto: 'https://api.dicebear.com/7.x/bottts/png?seed=' + username,
+              rol: 'user'
+            };
 
-        const miUsuario = {
-          id: 'user_' + Math.random().toString(36).substring(2, 9),
-          username: username,
-          nombre: username,
-          bio: 'Conectado en Web Chat Friends',
-          foto: 'https://api.dicebear.com/7.x/bottts/png?seed=' + username,
-          rol: 'user'
+            localStorage.setItem('wcf_usuario', JSON.stringify(miUsuario));
+            authScreen.style.display = 'none';
+            authScreen.remove();
+
+            if (typeof socket !== 'undefined') {
+              socket.emit('conectar-usuario', miUsuario);
+            }
+          }
         };
-
-        localStorage.setItem('wcf_usuario', JSON.stringify(miUsuario));
-        const authScreen = document.getElementById('authScreen');
-        if (authScreen) authScreen.style.display = 'none';
-        
-        if (typeof socket !== 'undefined') {
-          socket.emit('conectar-usuario', miUsuario);
-        }
-        
-        // Forzar ocultar pantalla si el display none no bastó
-        if (authScreen) authScreen.remove();
-      };
-
-      if (btnLogin) btnLogin.onclick = procesarEntrada;
-      if (btnRegister) btnRegister.onclick = procesarEntrada;
-    };
-
-    // Ejecutar al cargar la página
-    if (document.readyState === 'complete') {
-      configurarAcceso();
-    } else {
-      window.addEventListener('DOMContentLoaded', configurarAcceso);
-    }
+      }
+    }, 1000);
   </script>
 </body>
 </html>
