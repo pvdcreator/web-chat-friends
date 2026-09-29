@@ -295,7 +295,19 @@
           <div class="stat-label" style="font-size:0.65rem; color:#94a3b8; margin-top:2px;">Messages</div>
         </div>
       </div>
+<!-- Reproductor y Campo de Canción Favorita -->
+      <div id="myProfileSongCard" style="display: flex; align-items: center; justify-content: space-between; background: #18181b; border: 1px solid #27272a; padding: 10px 14px; border-radius: 12px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.2rem;">🎵</span>
+          <div>
+            <div style="font-size: 0.65rem; color: #a1a1aa; text-transform: uppercase; font-weight: bold;">Canción Favorita</div>
+            <div id="myProfileSongText" style="font-size: 0.85rem; color: #fff; font-weight: 600;">Cargando...</div>
+          </div>
+        </div>
+        <button id="btnPlaySong" style="background: #22c55e; color: #000; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem;" title="Escuchar canción">▶</button>
+      </div>
 
+      <input type="text" id="editSongInput" class="auth-input" placeholder="Tu canción (ej. The Weeknd - Starboy)" style="background:#1e1e24; border:1px solid #334155; padding:8px; border-radius:8px; color:#fff; font-size:0.85rem; width:100%; margin-bottom: 12px;">
       <!-- Intereses / Tags Visuales -->
       <div style="margin-bottom: 16px;">
         <h4 style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 6px;">Intereses (#tags)</h4>
@@ -820,6 +832,17 @@
 
     function abrirMiPerfil() {
       if (!miUsuario) return;
+      document.getElementById('editSongInput').value = miUsuario.cancionFav || '';
+      const textSongElem = document.getElementById('myProfileSongText');
+      if (textSongElem) textSongElem.textContent = miUsuario.cancionFav || 'Ninguna seleccionada';
+
+      const btnPlay = document.getElementById('btnPlaySong');
+      if (btnPlay) {
+        btnPlay.onclick = () => {
+          const tema = miUsuario.cancionFav || 'The Weeknd';
+          window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(tema)}`, '_blank');
+        };
+      }
       document.getElementById('myProfileAvatar').src = miUsuario.foto || '';
       document.getElementById('myProfileName').textContent = miUsuario.nombre || 'Sin nombre';
       document.getElementById('myProfileBio').textContent = miUsuario.bio || 'Sin biografía';
@@ -855,10 +878,12 @@
         const nuevoNombre = document.getElementById('editNombreInput').value.trim();
         const nuevaBio = document.getElementById('editBioInput').value.trim();
         const nuevosTagsStr = document.getElementById('editTagsInput').value.trim();
+        const nuevaCancion = document.getElementById('editSongInput').value.trim();
 
         if (nuevoNombre) miUsuario.nombre = nuevoNombre;
         miUsuario.bio = nuevaBio;
         miUsuario.tags = nuevosTagsStr ? nuevosTagsStr.split(',').map(t => t.trim()) : ['pets', 'music', 'chat'];
+        miUsuario.cancionFav = nuevaCancion || 'Música libre';
 
         localStorage.setItem('wcf_usuario', JSON.stringify(miUsuario));
         if (typeof socket !== 'undefined') {
