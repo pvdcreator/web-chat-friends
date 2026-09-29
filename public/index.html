@@ -257,19 +257,29 @@
         </div>
       </div>
 
-      <!-- Estadísticas -->
+      <!-- Estadísticas Estilo RandoSnoop -->
       <div class="stats-grid">
         <div class="stat-box">
-          <div class="stat-number" id="statSeguidores">0</div>
-          <div class="stat-label">Seguidores</div>
+          <div class="stat-number" id="statVistas">84k</div>
+          <div class="stat-label">Profile Views</div>
         </div>
         <div class="stat-box">
-          <div class="stat-number" id="statVistas">14</div>
-          <div class="stat-label">Vistas de Perfil</div>
+          <div class="stat-number" id="statSeguidores">3.5k</div>
+          <div class="stat-label">Followers</div>
         </div>
         <div class="stat-box">
-          <div class="stat-number" id="statMensajes">0</div>
-          <div class="stat-label">Mensajes Recibidos</div>
+          <div class="stat-number" id="statMensajes">156k</div>
+          <div class="stat-label">Received Messages</div>
+        </div>
+      </div>
+
+      <!-- Intereses / Tags -->
+      <div class="profile-edit-section" style="margin-bottom: 16px;">
+        <h4 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 6px;">Intereses (Tags)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="myProfileTagsContainer">
+          <span style="background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;">pets</span>
+          <span style="background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;">music</span>
+          <span style="background: #334155; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;">chat</span>
         </div>
       </div>
 
@@ -277,11 +287,10 @@
       <div class="profile-edit-section">
         <h4 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 4px;">Editar Información</h4>
         <input type="text" id="editNombreInput" class="auth-input" placeholder="Tu Nombre">
-        <input type="text" id="editBioInput" class="auth-input" placeholder="Tu Biografía...">
+        <input type="text" id="editBioInput" class="auth-input" placeholder="Tu Biografía (ej. Instagram)...">
         <button class="auth-btn" id="btnGuardarPerfil" style="margin-top: 6px;">Guardar Cambios</button>
       </div>
     </div>
-  </div>
 
   <canvas id="canvasSelfie" style="display: none;"></canvas>
 
